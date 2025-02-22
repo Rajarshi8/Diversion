@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Budget Planner Pie Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="static/css/styles.css">
+    <style>
+        :root {
+            --primary-bg: #ffffff;
+            --container-bg: #f5f5f5;
+            --text-color: #222;
+            --shadow-color: rgba(80, 78, 78, 0.15);
+            --border-radius: 25px;
+            --padding: 40px;
+            --accent-color: #a3c5f8;
+            --hover-glow: rgba(12, 184, 242, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .content {
+            margin-top: 50px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: 1.8px;
+            color: white;
+            /* Changed color to white */
+        }
+
+        #chart-container {
+            background: var(--container-bg);
+            padding: var(--padding);
+            border-radius: var(--border-radius);
+            box-shadow: 0px 15px 45px var(--shadow-color);
+            max-width: 650px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-direction: column;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border: 1px solid var(--hover-glow);
+        }
+
+        #chart-container:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 20px 50px var(--hover-glow);
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 350px;
+        }
+
+        .chart-legend {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* Navigation Bar Styling */
+        nav {
+            background-color: #1E40AF;
+            color: white;
+            padding: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-title h1 {
+            font-size: 20px;
+            font-weight: normal;
+
+        }
+
+        .nav-title span {
+            font-size: 14px;
+            background-color: #1E3A8A;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: #1E3A8A;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: #fff;
+        }
+
+        .nav-button:hover {
+            background-color: #1E40AF;
+        }
+
+        .nav-button svg {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+
+        header h1 {
+            margin-left: 10px;
+            font-size: 24px;
+        }
+
+        .fin {
+            padding-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="nav-title">
+                <h1 style="font-size: 24px; font-weight: bold; color: #fff; margin: 0;">FinPRO</h1>
+                <!-- <span>Financial Suggestions</span> -->
+            </div>
+            <a href="dashboard2.html" class="nav-button">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back
+            </a>
+        </div>
+    </nav>
+    <div>
+
+        <div class="content">
+            <h1>Property Budget Planner</h1>
+            <div id="chart-container">
+                <canvas id="budgetChart"></canvas>
+                <div class="chart-legend" id="legendContainer"></div>
+            </div>
+
+            <script>
+                const ctx = document.getElementById('budgetChart').getContext('2d');
+                const labels = ['Down Payment', 'Loan EMI', 'Property Taxes', 'Maintenance', 'Insurance', 'Legal Fees'];
+                const colors = ['#3357ff', '#33ff57', '#8e44ad', '#f4c242', '#ff7363', '#2ecc71'];
+
+                const budgetData = {
+                    labels: labels,
+                    datasets: [{
+                        data: [40000, 1500, 2000, 500, 1000, 1500],
+                        backgroundColor: colors,
+                        borderWidth: 4,
+                        hoverBorderWidth: 2,
+                        hoverOffset: 15,
+                    }]
+                };
+
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: budgetData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+
+                const legendContainer = document.getElementById('legendContainer');
+                labels.forEach((label, index) => {
+                    const legendItem = document.createElement('div');
+                    legendItem.classList.add('legend-item');
+                    legendItem.innerHTML = `<span class="legend-color" style="background-color: ${colors[index]};"></span>${label}`;
+                    legendContainer.appendChild(legendItem);
+                });
+            </script>
+        </div>
+</body>
+
+</html>

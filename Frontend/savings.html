@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal-Based Saving</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+        }
+
+        .container {
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            max-width: 100%;
+            margin-top: 20px;
+        }
+
+        nav {
+            background-color: #1E40AF;
+            color: white;
+            padding: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-title {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-title h1 {
+            font-size: 20px;
+            font-weight: normal;
+
+        }
+
+        .nav-title span {
+            font-size: 14px;
+            background-color: #1E3A8A;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: #1E3A8A;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            color: #fff;
+        }
+
+        .nav-button:hover {
+            background-color: #1E40AF;
+        }
+
+        .nav-button svg {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+
+        header h1 {
+            margin-left: 10px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body class="text-center p-5">
+    <nav>
+        <div class="nav-container">
+            <div class="nav-title">
+                <h1 style="font-size: 24px; font-weight: bold; color: #fff; margin: 0;">FinPRO</h1>
+                <!-- <span>Financial Suggestions</span> -->
+            </div>
+            <a href="dashboard2.html" class="nav-button">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back
+            </a>
+        </div>
+    </nav>
+    <div class="container mx-auto mt-120" style="margin-top: 100px;" id="containerform">
+        <div class="flex flex-col items-center gap-5">
+            <h2 class="text-2xl font-bold">Goal-Based Saving</h2>
+            <input type="text" id="goalName" placeholder="Enter your goal (e.g., Vacation, Emergency Fund)" class="w-full p-2 border rounded">
+            <input type="number" id="goalAmount" placeholder="Target Amount" class="w-full p-2 border rounded">
+            <input type="number" id="currentSavings" placeholder="Current Savings" class="w-full p-2 border rounded">
+            <button id="trackButton" onclick="updateChart()" class="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">Track Progress</button>
+            <canvas id="savingsChart"></canvas>
+            <p id="savingTip"></p>
+        </div>
+    </div>
+
+    <script>
+
+        // document.getElementById('containerform').addEventListener('mouseover', function() {
+        //     this.style.transform = 'scale(1.1)';
+        //     this.style.transition = 'transform 0.3s';
+        // });
+
+        // document.getElementById('containerform').addEventListener('mouseout', function() {
+        //     this.style.transform = 'scale(1)';
+        // });       
+
+        document.getElementById('trackButton').addEventListener('mouseover', function() {
+            this.style.transform = 'scale(1.1)';
+            this.style.transition = 'transform 0.3s';
+        });
+
+        document.getElementById('trackButton').addEventListener('mouseout', function() {
+            this.style.transform = 'scale(1)';
+        });
+    </script>
+    <script>
+        let chart;
+        function updateChart() {
+            let goal = document.getElementById('goalAmount').value;
+            let saved = document.getElementById('currentSavings').value;
+            let goalName = document.getElementById('goalName').value;
+            if (goal > 0) {
+                let ctx = document.getElementById('savingsChart').getContext('2d');
+                if (chart) chart.destroy();
+                chart = new Chart(ctx, {
+                    type: 'pie',
+                    data: { labels: ['Saved', 'Remaining'], datasets: [{ data: [saved, goal - saved], backgroundColor: ['#28a745', '#ddd'] }] },
+                    options: { responsive: true }
+                });
+                document.getElementById('savingTip').innerText = getSavingTip(goalName, saved / goal * 100);
+            }
+        }
+
+        function getSavingTip(goalName, progress) {
+            let tips = {
+                'Vacation': ["Save a little each month into a travel fund.", "Book flights in advance to save money."],
+                'Emergency Fund': ["Aim for at least 3-6 months of expenses.", "Keep your fund in a high-yield savings account."],
+                'Retirement': ["Invest in long-term options like index funds.", "Increase contributions when possible."],
+                'General': ["Set up automatic savings transfers."]
+            };
+
+            let category = tips[goalName] ? goalName : 'General';
+            return progress < 50 ? tips[category][0] : tips[category][1];
+        }
+    </script>
+</body>
+
+</html>
