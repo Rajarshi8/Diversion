@@ -1,0 +1,6 @@
+Flask
+Flask-CORS
+Flask-SQLAlchemy
+Flask-RESTful
+requests
+cryptography  # For Ghost Mode (data encryption)

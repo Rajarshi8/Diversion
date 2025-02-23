@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FINPRO - Financial Suggestions</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-blue-800 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold">FINPRO</h1>
+                <span class="text-sm bg-blue-700 px-2 py-1 rounded">Financial Suggestions</span>
+            </div>
+            <a href="dashboard.html">
+                <button onclick="window.history.back()" class="px-4 py-2 bg-blue-700 rounded hover:bg-blue-800 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </button>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 p-4">
+        <!-- User Profile Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold mb-4">Your Financial Profile</h2>
+            <form id="profileForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Income</label>
+                    <input type="number" id="monthlyIncome" class="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Expenses</label>
+                    <input type="number" id="monthlyExpenses" class="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Current Savings</label>
+                    <input type="number" id="currentSavings" class="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Risk Tolerance</label>
+                    <select id="riskTolerance" class="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                        <option value="low">Conservative (Low Risk)</option>
+                        <option value="medium">Moderate (Medium Risk)</option>
+                        <option value="high">Aggressive (High Risk)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Investment Goals</label>
+                    <select id="investmentGoals" class="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                        <option value="retirement">Retirement Planning</option>
+                        <option value="property">Property Purchase</option>
+                        <option value="education">Education Savings</option>
+                        <option value="emergency">Emergency Fund</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Investment Timeframe</label>
+                    <select id="timeframe" class="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500">
+                        <option value="short">Short Term (0-3 years)</option>
+                        <option value="medium">Medium Term (3-7 years)</option>
+                        <option value="long">Long Term (7+ years)</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <button type="submit" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        Generate Suggestions
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Suggestions Section -->
+        <div id="suggestionsSection" class="grid grid-cols-1 md:grid-cols-2 gap-8" style="display: none;">
+            <!-- Investment Distribution -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-bold mb-4">Recommended Investment Distribution</h3>
+                <canvas id="investmentChart" class="mb-4"></canvas>
+                <div id="investmentLegend" class="space-y-2"></div>
+            </div>
+
+            <!-- Specific Suggestions -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-bold mb-4">Personalized Recommendations</h3>
+                <div id="recommendationsList" class="space-y-4"></div>
+            </div>
+
+            <!-- Savings Goals -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-bold mb-4">Savings Goals</h3>
+                <div id="savingsGoals" class="space-y-4"></div>
+            </div>
+
+            <!-- Risk Analysis -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-bold mb-4">Risk Analysis</h3>
+                <div id="riskAnalysis" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize investment chart
+        let investmentChart;
+
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generateSuggestions();
+        });
+
+        function generateSuggestions() {
+            const income = parseFloat(document.getElementById('monthlyIncome').value);
+            const expenses = parseFloat(document.getElementById('monthlyExpenses').value);
+            const savings = parseFloat(document.getElementById('currentSavings').value);
+            const risk = document.getElementById('riskTolerance').value;
+            const goals = document.getElementById('investmentGoals').value;
+            const timeframe = document.getElementById('timeframe').value;
+
+            // Show suggestions section
+            document.getElementById('suggestionsSection').style.display = 'grid';
+
+            // Generate investment distribution
+            generateInvestmentDistribution(risk);
+
+            // Generate personalized recommendations
+            generateRecommendations(risk, goals, timeframe);
+
+            // Generate savings goals
+            generateSavingsGoals(income, expenses);
+
+            // Generate risk analysis
+            generateRiskAnalysis(risk, goals);
+        }
+
+        function generateInvestmentDistribution(risk) {
+            const distributions = {
+                low: {
+                    labels: ['Government Bonds', 'Fixed Deposits', 'Blue-chip Stocks', 'Mutual Funds', 'Cash'],
+                    data: [30, 25, 15, 20, 10],
+                    colors: ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#607D8B']
+                },
+                medium: {
+                    labels: ['Government Bonds', 'Corporate Bonds', 'Stocks', 'Mutual Funds', 'Real Estate'],
+                    data: [20, 20, 30, 20, 10],
+                    colors: ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#607D8B']
+                },
+                high: {
+                    labels: ['Stocks', 'Mutual Funds', 'Corporate Bonds', 'Real Estate', 'Cryptocurrency'],
+                    data: [40, 25, 15, 15, 5],
+                    colors: ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#607D8B']
+                }
+            };
+
+            const ctx = document.getElementById('investmentChart').getContext('2d');
+            
+            if (investmentChart) {
+                investmentChart.destroy();
+            }
+
+            investmentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: distributions[risk].labels,
+                    datasets: [{
+                        data: distributions[risk].data,
+                        backgroundColor: distributions[risk].colors
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Generate custom legend
+            const legendContainer = document.getElementById('investmentLegend');
+            legendContainer.innerHTML = '';
+            distributions[risk].labels.forEach((label, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center';
+                div.innerHTML = `
+                    <div class="w-4 h-4 rounded-full mr-2" style="background-color: ${distributions[risk].colors[index]}"></div>
+                    <span>${label}: ${distributions[risk].data[index]}%</span>
+                `;
+                legendContainer.appendChild(div);
+            });
+        }
+
+        function generateRecommendations(risk, goals, timeframe) {
+            const recommendations = {
+                low: [
+                    "Consider government bonds for stable returns",
+                    "Invest in high-rated fixed deposits",
+                    "Look into low-risk mutual funds",
+                    "Build emergency fund in high-yield savings account"
+                ],
+                medium: [
+                    "Mix of equity and debt mutual funds",
+                    "Consider index funds for steady growth",
+                    "Explore corporate bonds for better returns",
+                    "Start SIP in balanced mutual funds"
+                ],
+                high: [
+                    "Focus on equity-heavy portfolio",
+                    "Consider small-cap stocks for higher returns",
+                    "Explore international market investments",
+                    "Look into sector-specific mutual funds"
+                ]
+            };
+
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            recommendations[risk].forEach(rec => {
+                const div = document.createElement('div');
+                div.className = 'p-4 bg-blue-50 rounded-lg';
+                div.innerHTML = `
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-blue-600 mt-1 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>${rec}</span>
+                    </div>
+                `;
+                recommendationsList.appendChild(div);
+            });
+        }
+
+        function generateSavingsGoals(income, expenses) {
+            const monthlyNet = income - expenses;
+            const savingsGoals = document.getElementById('savingsGoals');
+            savingsGoals.innerHTML = `
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <h4 class="font-semibold mb-2">Monthly Savings Target</h4>
+                    <p class="text-lg text-green-600">₹${(monthlyNet * 0.2).toFixed(2)}</p>
+                    <p class="text-sm text-gray-600">20% of your net monthly income</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-semibold mb-2">Emergency Fund Target</h4>
+                    <p class="text-lg text-blue-600">₹${(expenses * 6).toFixed(2)}</p>
+                    <p class="text-sm text-gray-600">6 months of expenses</p>
+                </div>
+            `;
+        }
+
+        function generateRiskAnalysis(risk, goals) {
+            const riskLevels = {
+                low: {
+                    color: 'green',
+                    text: 'Your conservative approach suggests a focus on capital preservation. While returns might be lower, your investments are generally secure.'
+                },
+                medium: {
+                    color: 'blue',
+                    text: 'Your balanced approach allows for moderate growth while maintaining reasonable security. This suits long-term wealth building.'
+                },
+                high: {
+                    color: 'purple',
+                    text: 'Your aggressive approach seeks maximum growth. While potential returns are higher, be prepared for significant market fluctuations.'
+                }
+            };
+
+            const riskAnalysis = document.getElementById('riskAnalysis');
+            riskAnalysis.innerHTML = `
+                <div class="p-4 bg-${riskLevels[risk].color}-50 rounded-lg">
+                    <h4 class="font-semibold mb-2">Risk Assessment</h4>
+                    <p class="text-${riskLevels[risk].color}-600">${riskLevels[risk].text}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
